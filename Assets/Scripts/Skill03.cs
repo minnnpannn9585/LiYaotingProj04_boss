@@ -41,12 +41,6 @@ public class BossDashSkill : MonoBehaviour
         {
             dashChildObject.SetActive(false);
         }
-        
-        // 如果未设置场景中心，默认使用世界原点
-        if (areaCenter == Vector3.zero)
-        {
-            areaCenter = Vector3.zero;
-        }
     }
 
     private void Update()
@@ -175,11 +169,6 @@ public class BossDashSkill : MonoBehaviour
     // 显示路径预警
     private void ShowWarning()
     {
-        if (currentWarning != null)
-        {
-            Destroy(currentWarning);
-        }
-        
         currentWarning = Instantiate(warningPrefab, transform);
         
         // 计算预警位置和旋转
