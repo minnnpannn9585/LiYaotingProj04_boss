@@ -13,8 +13,9 @@ GameObject:
   - component: {fileID: 8002912636589313359}
   - component: {fileID: 9057534936423021550}
   - component: {fileID: 4982517348109059775}
+  - component: {fileID: 1114498236351902919}
   m_Layer: 6
-  m_Name: Bullet
+  m_Name: InfoBullet
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -133,3 +134,19 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 1
+--- !u!114 &1114498236351902919
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5231723346246882521}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 763048bca0eb04442ac20c433a1723d8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  BulletLiveTime: 5
+  particlePrefab: {fileID: 0}
+  explosionSound: {fileID: 0}
+  particleDuration: 3

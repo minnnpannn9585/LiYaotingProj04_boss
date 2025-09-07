@@ -12,9 +12,8 @@ public class Skill01 : MonoBehaviour
     [Tooltip("攻击间隔时间（秒）")]
     public float attackInterval = 3f;
     [Tooltip("子弹发射力度")]
-    public float launchForce = 20f;
-    [Tooltip("子弹存在时间（秒）")]
-    public float bulletLifetime = 5f;
+    public float minLaunchForce = 10f;
+    public float maxLaunchForce = 30f;
 
     [Header("子弹设置")]
     [Tooltip("立方体子弹预制体")]
@@ -36,33 +35,23 @@ public class Skill01 : MonoBehaviour
     /// </summary>
     void PerformFanAttack()
     {
+        if (firePoint == null || bulletPrefab == null) return;
+
         Vector3 forwardDir = firePoint.TransformDirection(Vector3.forward);
-        // 获取Boss的右侧方向（X轴）
         Vector3 rightDir = firePoint.TransformDirection(Vector3.right);
 
         for (int i = 0; i < bulletsPerAttack; i++)
         {
-            // 计算随机角度（转换为弧度）
-            float angleRadians = Random.Range(-fanAngle / 2, fanAngle / 2) * Mathf.Deg2Rad;
-            
-            // 关键修复：使用三角函数计算围绕Y轴的方向
-            // 这确保子弹在Y轴周围形成完美的扇形分布
-            Vector3 bulletDirection = 
-                forwardDir * Mathf.Cos(angleRadians) + 
-                rightDir * Mathf.Sin(angleRadians);
-            bulletDirection.Normalize();
+            float angleRadians = Random.Range(-fanAngle / 2f, fanAngle / 2f) * Mathf.Deg2Rad;
+            Vector3 bulletDirection = (forwardDir * Mathf.Cos(angleRadians) + rightDir * Mathf.Sin(angleRadians)).normalized;
 
-            print(bulletDirection);
-            // 实例化子弹
-            GameObject bullet = Instantiate(bulletPrefab, firePoint.position, 
-                Quaternion.LookRotation(bulletDirection));
-            
-            // 应用力
+            GameObject bullet = Instantiate(bulletPrefab, firePoint.position, Quaternion.LookRotation(bulletDirection));
             Rigidbody bulletRb = bullet.GetComponent<Rigidbody>();
-            bulletRb.AddForce(bulletDirection * launchForce, ForceMode.Impulse);
-
-            // 设置自动销毁
-            Destroy(bullet, bulletLifetime);
+            if (bulletRb != null)
+            {
+                float force = Random.Range(minLaunchForce, maxLaunchForce);
+                bulletRb.AddForce(bulletDirection * force, ForceMode.Impulse);
+            }
         }
     }
 
