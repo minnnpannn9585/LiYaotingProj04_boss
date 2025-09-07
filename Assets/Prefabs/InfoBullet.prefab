@@ -147,6 +147,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   BulletLiveTime: 5
-  particlePrefab: {fileID: 0}
-  explosionSound: {fileID: 0}
+  particlePrefab: {fileID: 4320359057167948269, guid: 7f09a8033356a4e77952c32561851776,
+    type: 3}
   particleDuration: 3
