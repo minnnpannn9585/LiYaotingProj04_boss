@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Skill01 : MonoBehaviour
@@ -21,19 +20,40 @@ public class Skill01 : MonoBehaviour
     [Tooltip("子弹发射点")]
     public Transform firePoint;
 
+    [Header("施放设置")]
+    [Tooltip("本次技能表现持续时间（秒）。LevelManager 连续两次 StartCoroutine(CastSkill()) 时，两次间隔等于此值")]
+    public float castDuration = 0.2f; // 新增，可在 Inspector 调整
 
+    [HideInInspector] public bool isCasting = false;   // BossExpression 可以检测
 
     void Update()
     {
-        if(Input.GetKeyDown(KeyCode.R)){
-            PerformFanAttack();
+        // 手动测试用：按 R 启动技能
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            StartCoroutine(CastSkill());
         }
+    }
+
+    /// <summary>
+    /// 提供给 LevelManager 调用的接口
+    /// </summary>
+    public IEnumerator CastSkill()
+    {
+        isCasting = true;
+
+        PerformFanAttack();
+
+        // 技能表现持续时间，改为使用 castDuration（可在 Inspector 调整）
+        yield return new WaitForSeconds(castDuration);
+
+        isCasting = false;
     }
 
     /// <summary>
     /// 执行扇形攻击
     /// </summary>
-    void PerformFanAttack()
+    private void PerformFanAttack()
     {
         if (firePoint == null || bulletPrefab == null) return;
 
@@ -62,11 +82,11 @@ public class Skill01 : MonoBehaviour
 
         Gizmos.color = Color.red;
         Vector3 direction = firePoint.forward;
-        
+
         // 计算扇形两边的方向
         Vector3 leftDirection = Quaternion.Euler(0, -fanAngle / 2, 0) * direction;
         Vector3 rightDirection = Quaternion.Euler(0, fanAngle / 2, 0) * direction;
-        
+
         // 绘制扇形范围示意
         Gizmos.DrawRay(firePoint.position, direction * 5f);
         Gizmos.DrawRay(firePoint.position, leftDirection * 5f);

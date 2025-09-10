@@ -14,15 +14,21 @@ public class BossDashSkill : MonoBehaviour
     [SerializeField] private float dashSpeed = 20f;   // 冲刺速度
     [SerializeField] private float dashInterval = 2f; // 冲刺间隔时间
     [SerializeField] private int totalDashes = 5;     // 总冲刺次数
-    
+
     [Header("预警参数")]
     [SerializeField] private GameObject warningPrefab; // 预警效果预制体
     [SerializeField] private float warningDuration = 1f; // 预警显示时间
     [SerializeField] private Vector3 warningScale = new Vector3(1, 0.1f, 2); // 预警效果缩放
-    
+    [Tooltip("预警显示的 Y 高度（世界坐标），默认 -2.5 与原实现一致，可在 Inspector 调整）")]
+    [SerializeField] private float warningHeight = -2.5f;
+
+    [Header("冲刺高度设置")]
+    [Tooltip("冲刺子物体生成时的 Y 高度（世界坐标）。在 Inspector 中调整此值以改变生成高度。")]
+    [SerializeField] private float dashSpawnHeight;
+
     private enum DashDirection { LeftRight, ForwardBack }
     private enum SkillState { Ready, Warning, Dashing, Cooldown }
-    
+
     private SkillState currentState;
     private DashDirection currentDirection;
     private int dashCount;
@@ -35,7 +41,7 @@ public class BossDashSkill : MonoBehaviour
     {
         currentState = SkillState.Ready;
         dashCount = 0;
-        
+
         // 初始化冲刺子物体状态
         if (dashChildObject != null)
         {
@@ -53,7 +59,7 @@ public class BossDashSkill : MonoBehaviour
                     StartNextDash();
                 }
                 break;
-                
+
             case SkillState.Warning:
                 stateTimer += Time.deltaTime;
                 if (stateTimer >= warningDuration)
@@ -61,7 +67,7 @@ public class BossDashSkill : MonoBehaviour
                     StartDashing();
                 }
                 break;
-                
+
             case SkillState.Dashing:
                 // 移动冲刺子物体
                 if (dashChildObject != null)
@@ -70,8 +76,8 @@ public class BossDashSkill : MonoBehaviour
                     if (distance > 0.5f)
                     {
                         dashChildObject.transform.position = Vector3.MoveTowards(
-                            dashChildObject.transform.position, 
-                            dashEndPos, 
+                            dashChildObject.transform.position,
+                            dashEndPos,
                             dashSpeed * Time.deltaTime
                         );
                     }
@@ -86,7 +92,7 @@ public class BossDashSkill : MonoBehaviour
                     EndDashing();
                 }
                 break;
-                
+
             case SkillState.Cooldown:
                 stateTimer += Time.deltaTime;
                 if (stateTimer >= dashInterval)
@@ -102,21 +108,26 @@ public class BossDashSkill : MonoBehaviour
     {
         // 随机选择冲刺方向（左右或前后）
         currentDirection = (DashDirection)Random.Range(0, 2);
-        
+
         // 确定冲刺起点（边缘随机位置）和终点
         dashStartPos = GetEdgeStartPosition();
         dashEndPos = CalculateDashEndPosition();
-        
+
         // 准备冲刺子物体
         if (dashChildObject != null)
         {
             dashChildObject.transform.position = dashStartPos;
+            // 水平朝向终点，避免俯仰
+            Vector3 flatDir = dashEndPos - dashStartPos;
+            flatDir.y = 0f;
+            if (flatDir.sqrMagnitude > 0.0001f)
+                dashChildObject.transform.rotation = Quaternion.LookRotation(flatDir);
             dashChildObject.SetActive(true); // 激活子物体
         }
-        
+
         // 显示预警
         ShowWarning();
-        
+
         currentState = SkillState.Warning;
         stateTimer = 0f;
     }
@@ -141,8 +152,8 @@ public class BossDashSkill : MonoBehaviour
             startPos.x = areaCenter.x + Random.Range(-areaWidth / 2, areaWidth / 2);
         }
         
-        // 保持Y轴高度（假设在地面上）
-        startPos.y = transform.position.y;
+        // 使用可配置的生成高度（世界坐标）
+        startPos.y = dashSpawnHeight;
         
         return startPos;
     }
@@ -151,7 +162,7 @@ public class BossDashSkill : MonoBehaviour
     private Vector3 CalculateDashEndPosition()
     {
         Vector3 endPos = dashStartPos;
-        
+
         if (currentDirection == DashDirection.LeftRight)
         {
             // 左右方向：从左侧边缘冲刺到右侧边缘
@@ -162,28 +173,37 @@ public class BossDashSkill : MonoBehaviour
             // 前后方向：从上侧边缘冲刺到下侧边缘
             endPos.z = areaCenter.z + areaDepth / 2;
         }
-        
+
         return endPos;
     }
 
-    // 显示路径预警
+    // 显示路径预警（仅调整长度 Z，不改变预制体的 X/Y 缩放，但保证朝向正确）
     private void ShowWarning()
     {
-        currentWarning = Instantiate(warningPrefab, transform);
-        
-        // 计算预警位置和旋转
+        if (warningPrefab == null) return;
+
+        currentWarning = Instantiate(warningPrefab);
+        if (currentWarning == null) return;
+
+        // 位置：中点，高度基于起点高度 + 偏移
         Vector3 warningPos = Vector3.Lerp(dashStartPos, dashEndPos, 0.5f);
-        warningPos.y = -2.5f; // 略微抬高，避免与地面重合
-        
+        warningPos.y = dashStartPos.y + warningHeight;
         currentWarning.transform.position = warningPos;
-        currentWarning.transform.LookAt(dashEndPos);
-        
-        // 根据冲刺长度调整预警大小
+
+        // 水平朝向终点，避免俯仰（只改变旋转，不动 X/Y 缩放）
+        Vector3 flatDir = dashEndPos - dashStartPos;
+        flatDir.y = 0f;
+        if (flatDir.sqrMagnitude > 0.0001f)
+            currentWarning.transform.rotation = Quaternion.LookRotation(flatDir);
+
+        // 仅调整本地 Z 缩放（长度）
         float dashLength = Vector3.Distance(dashStartPos, dashEndPos);
-        currentWarning.transform.localScale = new Vector3(
-            warningScale.z, warningScale.y, dashLength
-            
-        );
+        Vector3 ls = currentWarning.transform.localScale;
+        ls.z = Mathf.Max(0.01f, dashLength);
+        currentWarning.transform.localScale = ls;
+
+        // 保持世界变换不变地附加到本对象
+        currentWarning.transform.SetParent(transform, true);
     }
 
     // 开始冲刺
@@ -194,7 +214,7 @@ public class BossDashSkill : MonoBehaviour
             Destroy(currentWarning);
             currentWarning = null;
         }
-        
+
         currentState = SkillState.Dashing;
     }
 
@@ -206,11 +226,11 @@ public class BossDashSkill : MonoBehaviour
         {
             dashChildObject.SetActive(false);
         }
-        
+
         dashCount++;
         currentState = SkillState.Cooldown;
         stateTimer = 0f;
-        
+
         if (dashCount >= totalDashes)
         {
             enabled = false;
@@ -251,13 +271,13 @@ public class BossDashSkill : MonoBehaviour
             areaCenter.y,
             areaCenter.z + areaDepth / 2
         );
-        
+
         // 绘制区域边框
         Gizmos.DrawLine(new Vector3(areaMin.x, areaMin.y, areaMin.z), new Vector3(areaMax.x, areaMin.y, areaMin.z));
         Gizmos.DrawLine(new Vector3(areaMax.x, areaMin.y, areaMin.z), new Vector3(areaMax.x, areaMin.y, areaMax.z));
         Gizmos.DrawLine(new Vector3(areaMax.x, areaMin.y, areaMax.z), new Vector3(areaMin.x, areaMin.y, areaMax.z));
         Gizmos.DrawLine(new Vector3(areaMin.x, areaMin.y, areaMax.z), new Vector3(areaMin.x, areaMin.y, areaMin.z));
-        
+
         // 绘制当前冲刺路径
         if (currentState != SkillState.Ready)
         {
@@ -265,4 +285,7 @@ public class BossDashSkill : MonoBehaviour
             Gizmos.DrawLine(dashStartPos, dashEndPos);
         }
     }
+
+
+
 }

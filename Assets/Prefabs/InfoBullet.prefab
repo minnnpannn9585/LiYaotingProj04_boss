@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 9057534936423021550}
   - component: {fileID: 4982517348109059775}
   - component: {fileID: 1114498236351902919}
+  - component: {fileID: -7313445120736169066}
   m_Layer: 6
   m_Name: InfoBullet
   m_TagString: Untagged
@@ -150,3 +151,23 @@ MonoBehaviour:
   particlePrefab: {fileID: 4320359057167948269, guid: 7f09a8033356a4e77952c32561851776,
     type: 3}
   particleDuration: 3
+  explosionSound: {fileID: 8300000, guid: a3496382b2e86a347a645ab3455b32ae, type: 3}
+  explosionVolume: 1
+--- !u!114 &-7313445120736169066
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5231723346246882521}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4eeebb15e8f25f347a7ca2a57f3b7ef3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  warningPrefab: {fileID: 5250280436309846246, guid: 5a637619f7782a64fa834ee433fc9a97,
+    type: 3}
+  preWarningDelay: 0
+  warningDuration: 3
+  velocityThreshold: 0.01
+  spawnOffset: {x: 0, y: -0.5, z: 0}
