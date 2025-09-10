@@ -8,6 +8,9 @@ public class WarningCircle : MonoBehaviour
     public float warningDuration = 5f;    // 预警存在时长，<=0 不自动销毁
     public float velocityThreshold = 0.05f; // 速度阈值，视为停止
     public Vector3 spawnOffset = new Vector3(0f, 0.02f, 0f);
+    
+    float startTime = 0.2f;
+    bool spawned = false;
 
     Rigidbody rb;
     bool timerStarted = false;
@@ -21,9 +24,15 @@ public class WarningCircle : MonoBehaviour
     void Update()
     {
         if (timerStarted || rb == null) return;
+        
+        startTime -= Time.deltaTime;
+        if (startTime <= 0)
+        {
+            spawned = true;
+        }
 
         float thrSq = velocityThreshold * velocityThreshold;
-        if (rb.velocity.sqrMagnitude <= thrSq)
+        if (rb.velocity.sqrMagnitude <= thrSq && spawned)
         {
             timerStarted = true;
             stoppedPosition = transform.position; // 记录停止位置

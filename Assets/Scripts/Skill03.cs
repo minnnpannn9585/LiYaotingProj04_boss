@@ -3,7 +3,9 @@ using UnityEngine;
 public class BossDashSkill : MonoBehaviour
 {
     [Header("冲刺子物体")]
-    [SerializeField] private GameObject dashChildObject; // 负责冲刺的子物体
+    [SerializeField] private GameObject dashChildObjectlr; // 负责冲刺的子物体
+    [SerializeField] private GameObject dashChildObjectbf;
+    GameObject dashChildObject;
 
     [Header("场景区域参数 (固定值)")]
     [SerializeField] private float areaWidth = 37f;    // 场景宽度
@@ -41,12 +43,6 @@ public class BossDashSkill : MonoBehaviour
     {
         currentState = SkillState.Ready;
         dashCount = 0;
-
-        // 初始化冲刺子物体状态
-        if (dashChildObject != null)
-        {
-            dashChildObject.SetActive(false);
-        }
     }
 
     private void Update()
@@ -109,6 +105,15 @@ public class BossDashSkill : MonoBehaviour
         // 随机选择冲刺方向（左右或前后）
         currentDirection = (DashDirection)Random.Range(0, 2);
 
+        if (currentDirection == DashDirection.LeftRight)
+        {
+            dashChildObject = dashChildObjectlr;
+        }
+        else if (currentDirection == DashDirection.ForwardBack)
+        {
+            dashChildObject = dashChildObjectbf;
+        }
+
         // 确定冲刺起点（边缘随机位置）和终点
         dashStartPos = GetEdgeStartPosition();
         dashEndPos = CalculateDashEndPosition();
@@ -121,7 +126,10 @@ public class BossDashSkill : MonoBehaviour
             Vector3 flatDir = dashEndPos - dashStartPos;
             flatDir.y = 0f;
             if (flatDir.sqrMagnitude > 0.0001f)
-                dashChildObject.transform.rotation = Quaternion.LookRotation(flatDir);
+            {
+                //dashChildObject.transform.rotation = Quaternion.LookRotation(flatDir);
+            }
+                
             dashChildObject.SetActive(true); // 激活子物体
         }
 
