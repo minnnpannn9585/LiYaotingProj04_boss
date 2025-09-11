@@ -9,11 +9,23 @@ public class LevelManager : MonoBehaviour
     public float skillInterval = 2f;
     public float TimegapBetweenSkills = 1f; // 一技能与二技能之间的间隔（秒）
 
-    void Start()
+    float startTimer = 5f;
+    bool started = false;
+
+
+    void Update()
     {
-        // 启动循环
-        StartCoroutine(BossRoutine());
+        startTimer -= Time.deltaTime;
+        
+        if(startTimer <= 0f && !started)
+        {
+
+            StartCoroutine(BossRoutine());
+            started = true;
+        }
     }
+
+
 
     IEnumerator BossRoutine()
     {
