@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class BossDashSkill : MonoBehaviour
@@ -28,6 +29,13 @@ public class BossDashSkill : MonoBehaviour
     [Tooltip("冲刺子物体生成时的 Y 高度（世界坐标）。在 Inspector 中调整此值以改变生成高度。")]
     [SerializeField] private float dashSpawnHeight;
 
+    [Header("控制")]
+    [Tooltip("是否自动释放技能（Inspector 可配置）。将其设为 false 可临时禁止自动释放，仍可通过 ActivateSkill 或 LevelManager 的 CastSkill 手动触发。")]
+    [SerializeField] private bool autoRelease = false;
+
+    // 标记技能是否正在运行（避免重复触发）
+    private bool isRunning = false;
+
     private enum DashDirection { LeftRight, ForwardBack }
     private enum SkillState { Ready, Warning, Dashing, Cooldown }
 
@@ -47,56 +55,67 @@ public class BossDashSkill : MonoBehaviour
 
     private void Update()
     {
-        switch (currentState)
+        // 仅在 Inspector 开启自动释放时由 Update 启动协程式释放
+        if (autoRelease && !isRunning)
         {
-            case SkillState.Ready:
-                if (dashCount < totalDashes)
-                {
-                    StartNextDash();
-                }
-                break;
-
-            case SkillState.Warning:
-                stateTimer += Time.deltaTime;
-                if (stateTimer >= warningDuration)
-                {
-                    StartDashing();
-                }
-                break;
-
-            case SkillState.Dashing:
-                // 移动冲刺子物体
-                if (dashChildObject != null)
-                {
-                    float distance = Vector3.Distance(dashChildObject.transform.position, dashEndPos);
-                    if (distance > 0.5f)
-                    {
-                        dashChildObject.transform.position = Vector3.MoveTowards(
-                            dashChildObject.transform.position,
-                            dashEndPos,
-                            dashSpeed * Time.deltaTime
-                        );
-                    }
-                    else
-                    {
-                        EndDashing();
-                    }
-                }
-                else
-                {
-                    // 如果没有设置冲刺子物体，结束冲刺
-                    EndDashing();
-                }
-                break;
-
-            case SkillState.Cooldown:
-                stateTimer += Time.deltaTime;
-                if (stateTimer >= dashInterval)
-                {
-                    currentState = SkillState.Ready;
-                }
-                break;
+            StartCoroutine(CastSkill());
         }
+    }
+
+    // 用于 LevelManager 的协程接口，执行一次完整的技能阶段（包含多次冲刺）
+    public IEnumerator CastSkill()
+    {
+        if (isRunning) yield break;
+        isRunning = true;
+
+        dashCount = 0;
+        currentState = SkillState.Ready;
+
+        for (int i = 0; i < totalDashes; i++)
+        {
+            // 准备并显示预警
+            StartNextDash();
+
+            // 等待预警时间
+            yield return new WaitForSeconds(warningDuration);
+
+            // 进入冲刺（销毁预警）
+            if (currentWarning != null)
+            {
+                Destroy(currentWarning);
+                currentWarning = null;
+            }
+
+            // 开始移动子物体到终点
+            if (dashChildObject != null)
+            {
+                currentState = SkillState.Dashing;
+                while (Vector3.Distance(dashChildObject.transform.position, dashEndPos) > 0.5f)
+                {
+                    dashChildObject.transform.position = Vector3.MoveTowards(
+                        dashChildObject.transform.position,
+                        dashEndPos,
+                        dashSpeed * Time.deltaTime
+                    );
+                    yield return null;
+                }
+
+                // 结束本次冲刺
+                dashChildObject.SetActive(false);
+            }
+
+            dashCount++;
+            currentState = SkillState.Cooldown;
+
+            // 冷却间隔
+            yield return new WaitForSeconds(dashInterval);
+            currentState = SkillState.Ready;
+        }
+
+        // 技能阶段结束，短延时后重置状态（保持与之前 ResetSkill 行为兼容）
+        yield return new WaitForSeconds(0.01f);
+        ResetSkill();
+        isRunning = false;
     }
 
     // 开始下一次冲刺
