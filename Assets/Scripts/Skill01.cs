@@ -8,8 +8,6 @@ public class Skill01 : MonoBehaviour
     public float fanAngle = 60f;
     [Tooltip("每次攻击发射的子弹数量")]
     public int bulletsPerAttack = 5;
-    [Tooltip("攻击间隔时间（秒）")]
-    public float attackInterval = 3f;
     [Tooltip("子弹发射力度")]
     public float minLaunchForce = 10f;
     public float maxLaunchForce = 30f;
@@ -22,17 +20,25 @@ public class Skill01 : MonoBehaviour
 
     [Header("施放设置")]
     [Tooltip("本次技能表现持续时间（秒）。LevelManager 连续两次 StartCoroutine(CastSkill()) 时，两次间隔等于此值")]
-    public float castDuration = 0.2f; // 新增，可在 Inspector 调整
+    public float castDuration = 0.2f;     // 表现时间
+    public float attackInterval = 3f;     // 冷却
 
-    [HideInInspector] public bool isCasting = false;   // BossExpression 可以检测
+    public bool isCasting = false;
+    private bool isOnCooldown = false;
 
     void Update()
     {
         // 手动测试用：按 R 启动技能
         if (Input.GetKeyDown(KeyCode.R))
         {
-            StartCoroutine(CastSkill());
+            TryCast();
         }
+    }
+
+    public void TryCast()
+    {
+        if (isCasting || isOnCooldown) return;
+        StartCoroutine(CastSkill());
     }
 
     /// <summary>
@@ -41,13 +47,18 @@ public class Skill01 : MonoBehaviour
     public IEnumerator CastSkill()
     {
         isCasting = true;
+        isOnCooldown = true;
 
-        PerformFanAttack();
+        PerformFanAttack();          // 立刻发射
 
-        // 技能表现持续时间，改为使用 castDuration（可在 Inspector 调整）
+        // 表现时间（例如动作/特效窗口）
         yield return new WaitForSeconds(castDuration);
-
         isCasting = false;
+
+        // 剩余冷却（如果想冷却从开始算，这里直接等待 attackInterval；
+        // 若想“攻击启动时就开始计时”，则把下面这一行换成：yield return new WaitForSeconds(attackInterval - castDuration) 并确保 attackInterval >= castDuration）
+        yield return new WaitForSeconds(attackInterval - castDuration); // 仅当 attackInterval > castDuration 时合理
+        isOnCooldown = false;
     }
 
     /// <summary>

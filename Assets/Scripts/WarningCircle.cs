@@ -5,9 +5,9 @@ public class WarningCircle : MonoBehaviour
 {
     public GameObject warningPrefab;      // 必填：预警预制体
     public float preWarningDelay = 2f;    // 停止后等待秒数
-    public float warningDuration = 5f;    // 预警存在时长，<=0 不自动销毁
+    public float warningDuration;    // 预警存在时长，<=0 不自动销毁
     public float velocityThreshold = 0.05f; // 速度阈值，视为停止
-    public Vector3 spawnOffset = new Vector3(0f, 0.02f, 0f);
+    public Vector3 spawnOffset = new Vector3(0f, 0f, 0f);
     
     float startTime = 0.2f;
     bool spawned = false;

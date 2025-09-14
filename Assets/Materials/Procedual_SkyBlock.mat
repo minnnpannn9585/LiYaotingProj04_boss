@@ -39,8 +39,8 @@ Material:
     m_Ints: []
     m_Floats:
     - _MoonScale: 0.05
-    - _Moon_Position: -11.94
-    - _Moon_Z: 1
+    - _Moon_Position: -11.91
+    - _Moon_Z: 0.3
     - _Noise_Threshhold: 0.74
     - _QueueControl: 0
     - _QueueOffset: 0

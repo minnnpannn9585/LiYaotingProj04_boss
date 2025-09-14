@@ -9,7 +9,7 @@ public class LevelManager : MonoBehaviour
     public float skillInterval = 2f;
     public float TimegapBetweenSkills = 1f; // 一技能与二技能之间的间隔（秒）
 
-    float startTimer = 5f;
+    public float startTimer;
     bool started = false;
 
 

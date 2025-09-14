@@ -25,27 +25,34 @@ public class Skill02 : MonoBehaviour
     [Header("Cast")]
     [SerializeField, Min(0f)] private float maxCastDuration = 10f; // 协程等待的最大时长（秒）
 
+    [Header("Spawn FX")]
+    [SerializeField] private GameObject spawnParticlePrefab;   // 生成时的粒子特效（可为空）
+    [SerializeField, Min(0f)] private float particleLifetime = 2f; // 没有内置自销毁时的兜底销毁时间
+    [SerializeField] private bool parentParticleToPopup = false;   // 是否作为子物体跟随
+
+    [Header("Audio")]
+    [SerializeField] private AudioClip spawnClip;              // 统一生成音效
+    [SerializeField, Range(0f,1f)] private float spawnVolume = 1f;
+
     // 运行时管理
     private List<GameObject> spawnedInstances = new List<GameObject>();
     private int remainingGoodCount = 0;
+    // 对外标记：当前是否在施放（BossExpression 读取）
+    public bool isCasting = false;
+    private Coroutine castingStateCoroutine;
 
     // 对外调用：二技能的协程接口，LevelManager 使用 StartCoroutine(skill02.CastSkill())
     public IEnumerator CastSkill()
     {
-        // 触发一次生成
-        SpawnCallPopups();
+    // 触发一次生成
+    SpawnCallPopups();
 
-        // 等待所有 good 被收集，或超时
-        float timer = 0f;
-        while (remainingGoodCount > 0 && timer < maxCastDuration)
-        {
-            timer += Time.deltaTime;
-            yield return null;
-        }
+    // 使用统一的施放状态协程来等待（剩余 good 为 0 或超时）
+    yield return StartCoroutine(CastingStateCoroutine());
 
-        // 超时或全部收集后，确保场上清空并结束协程
-        DestroyAllSpawnedPopups();
-        yield break;
+    // 超时或全部收集后，确保场上清空并结束协程
+    DestroyAllSpawnedPopups();
+    yield break;
     }
 
     void Update()
@@ -83,14 +90,18 @@ public class Skill02 : MonoBehaviour
                 }
 
                 GameObject instance = Instantiate(goodPopupPrefab, pos.Value, Quaternion.identity);
-
-                // 添加碰撞通知组件，告知这是“好”的预制体
                 var collector = instance.AddComponent<PopupCollector>();
                 collector.Setup(this, true);
-
                 spawnedInstances.Add(instance);
+
+                SpawnParticleAt(pos.Value, instance.transform);
+                PlaySpawnSfx(); // 新增
             }
         }
+
+        // 如果通过测试调用 SpawnCallPopups（例如按 E），确保施放状态协程在运行
+        if (castingStateCoroutine == null)
+            castingStateCoroutine = StartCoroutine(CastingStateCoroutine());
 
         // 生成坏的预制体
         if (badPopupPrefab != null)
@@ -105,12 +116,12 @@ public class Skill02 : MonoBehaviour
                 }
 
                 GameObject instance = Instantiate(badPopupPrefab, pos.Value, Quaternion.identity);
-
-                // 添加碰撞通知组件，标记为“坏”的预制体（玩家碰到坏的不会触发全部销毁逻辑）
                 var collector = instance.AddComponent<PopupCollector>();
                 collector.Setup(this, false);
-
                 spawnedInstances.Add(instance);
+
+                SpawnParticleAt(pos.Value, instance.transform);
+                PlaySpawnSfx(); // 新增
             }
         }
     }
@@ -153,6 +164,30 @@ public class Skill02 : MonoBehaviour
             }
         }
         spawnedInstances.Clear();
+
+        // 清理施放状态
+        isCasting = false;
+        if (castingStateCoroutine != null)
+        {
+            StopCoroutine(castingStateCoroutine);
+            castingStateCoroutine = null;
+        }
+    }
+
+    // 统一的施放状态协程：设置 isCasting=true 并等待剩余 good 为 0 或超时
+    private IEnumerator CastingStateCoroutine()
+    {
+        isCasting = true;
+        float timer = 0f;
+        while (remainingGoodCount > 0 && timer < maxCastDuration)
+        {
+            timer += Time.deltaTime;
+            yield return null;
+        }
+
+        isCasting = false;
+        castingStateCoroutine = null;
+        yield break;
     }
 
     private Vector3? TryFindFreePosition()
@@ -187,4 +222,52 @@ public class Skill02 : MonoBehaviour
         Gizmos.DrawWireCube(transform.position + new Vector3(0f, spawnHeight, 0f), size);
     }
 
+    private AudioSource audioSource; // 新增
+
+    private void Awake()
+    {
+        audioSource = GetComponent<AudioSource>();
+        if (!audioSource)
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
+            audioSource.playOnAwake = false;
+            audioSource.loop = false;
+        }
+    }
+
+    private void PlaySpawnSfx()
+    {
+        if (spawnClip == null || audioSource == null) return;
+        // 直接使用 PlayOneShot 的第二个参数应用音量（不改 pitch）
+        audioSource.PlayOneShot(spawnClip, spawnVolume);
+    }
+
+    private void SpawnParticleAt(Vector3 worldPos, Transform popupTransform)
+    {
+        if (spawnParticlePrefab == null) return;
+
+        Transform parent = parentParticleToPopup ? popupTransform : null;
+        GameObject fx = Instantiate(spawnParticlePrefab, worldPos, Quaternion.identity, parent);
+
+        // 如果粒子上有 ParticleSystem 且其 stopAction 会自毁，就不再手动 Destroy
+        var ps = fx.GetComponent<ParticleSystem>();
+        if (ps != null)
+        {
+            // 没有自毁组件/脚本时，用兜底销毁
+            if (!HasAutoDestroy(ps))
+            {
+                Destroy(fx, Mathf.Max(particleLifetime, ps.main.duration + ps.main.startLifetime.constantMax));
+            }
+        }
+        else
+        {
+            Destroy(fx, particleLifetime);
+        }
+    }
+
+    private bool HasAutoDestroy(ParticleSystem ps)
+    {
+        // 若你之后有自定义 AutoDestroy 脚本可在这里检测
+        return false;
+    }
 }
