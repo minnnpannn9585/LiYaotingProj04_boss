@@ -1,8 +1,11 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class LevelManager : MonoBehaviour
 {
+    public Image enemyHealthImage;
+    public float enemyHealth = 100f;
     public Skill01 skill01;
     public Skill02 skill02;
     public BossDashSkill skill03; // 第三技能（冲刺），由 LevelManager 控制 CastSkill()
@@ -12,6 +15,17 @@ public class LevelManager : MonoBehaviour
     public float startTimer;
     bool started = false;
 
+    public void EnemyTakeDamage()
+    {
+        enemyHealth -= 10f;
+        enemyHealthImage.fillAmount = enemyHealth / 100f;
+        if (enemyHealth <= 0f)
+        {
+            // 敌人死亡逻辑
+            Debug.Log("Enemy Defeated!");
+            // 可以添加更多的死亡处理代码，例如播放动画、掉落物品等
+        }
+    }
 
     void Update()
     {
