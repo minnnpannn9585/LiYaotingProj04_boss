@@ -18,6 +18,5 @@ public class PlayerDamageTrigger : MonoBehaviour
             playerHealth.TakeDamage(10);
             Instantiate(vfxPrefab, transform.position, Quaternion.identity);
         }
-        
     }
 }

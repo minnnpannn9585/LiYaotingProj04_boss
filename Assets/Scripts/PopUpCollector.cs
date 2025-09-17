@@ -2,49 +2,34 @@ using UnityEngine;
 
 public class PopupCollector : MonoBehaviour
 {
-    [Tooltip("由 Skill02 在运行时引用，也可在 Inspector 手动拖入")]
-    public Skill02 manager;
+    [Header("拾取音效")]
+    public AudioClip collectSfx;
+    [Range(0f, 1f)] public float sfxVolume = 1.0f;
 
-    [Tooltip("是否为好的预制体，可在 Inspector 设置")]
-    [SerializeField] private bool isGood = true;
+    private Skill02 manager;
+    private bool isGood;
+    private bool collected;
 
-    // 新增：供 Skill02 在运行时设置 manager 和 isGood
-    public void Setup(Skill02 mgr, bool isGood)
+    // 由 Skill02 在实例化后立即调用
+    public void Setup(Skill02 mgr, bool goodFlag)
     {
-        this.manager = mgr;
-        this.isGood = isGood;
-    }
-
-    // 如果 manager 在运行时未设置，可以尝试自动寻找（可选）
-    private void Awake()
-    {
-        if (manager == null)
-        {
-            manager = FindObjectOfType<Skill02>();
-        }
+        manager = mgr;
+        isGood = goodFlag;
     }
 
     private void OnTriggerEnter(Collider other)
     {
+        if (collected) return;
+        if (!other.CompareTag("Player")) return;
         if (manager == null) return;
-        if (other.CompareTag("Player"))
-        {
-            manager.NotifyCollected(gameObject, isGood);
-        }
-    }
 
-    private void OnCollisionEnter(Collision collision)
-    {
-        if (manager == null) return;
-        if (collision.collider.CompareTag("Player"))
+        // 播放音效
+        if (collectSfx != null)
         {
-            manager.NotifyCollected(gameObject, isGood);
+            AudioSource.PlayClipAtPoint(collectSfx, transform.position, sfxVolume);
         }
-    }
 
-    private void OnDestroy()
-    {
-        // 防止引用残留
-        manager = null;
+        collected = true;
+        manager.NotifyCollected(gameObject, isGood);
     }
 }

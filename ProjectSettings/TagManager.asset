@@ -6,6 +6,7 @@ TagManager:
   tags:
   - CinemachineTarget
   - Damage
+  - BossDamage
   layers:
   - Default
   - TransparentFX

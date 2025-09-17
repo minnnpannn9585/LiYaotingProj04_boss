@@ -6,20 +6,26 @@ using UnityEngine.UI;
 public class PlayerHealth : MonoBehaviour
 {
     public int maxHealth = 100;
-    public int currentHealth =100;
-    public Image playerHPImage;
-
+    public int currentHealth = 100;
+    public Image healthBar;
+    float lerpSpeed;
 
     public void TakeDamage(int damage)
     {
         Debug.Log("Player takes " + damage + " damage.");
+
         currentHealth -= damage;
-        playerHPImage.fillAmount = (float)currentHealth / maxHealth;
+
+        healthBar.fillAmount = (float)currentHealth / maxHealth;
+
         if (currentHealth <= 0)
         {
             //Die();
         }
+
+        lerpSpeed = 3f * Time.deltaTime;
+
+
     }
 
-    
 }

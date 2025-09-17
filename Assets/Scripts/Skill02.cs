@@ -90,8 +90,18 @@ public class Skill02 : MonoBehaviour
                 }
 
                 GameObject instance = Instantiate(goodPopupPrefab, pos.Value, Quaternion.identity);
-                var collector = instance.AddComponent<PopupCollector>();
-                collector.Setup(this, true);
+                
+                // 改动：不再 AddComponent，而是 GetComponent
+                var collector = instance.GetComponent<PopupCollector>();
+                if (collector != null)
+                {
+                    collector.Setup(this, true);
+                }
+                else
+                {
+                    Debug.LogWarning($"预制体 {goodPopupPrefab.name} 上缺少 PopupCollector 脚本！");
+                }
+
                 spawnedInstances.Add(instance);
 
                 SpawnParticleAt(pos.Value, instance.transform);
@@ -116,8 +126,18 @@ public class Skill02 : MonoBehaviour
                 }
 
                 GameObject instance = Instantiate(badPopupPrefab, pos.Value, Quaternion.identity);
-                var collector = instance.AddComponent<PopupCollector>();
-                collector.Setup(this, false);
+
+                // 改动：不再 AddComponent，而是 GetComponent
+                var collector = instance.GetComponent<PopupCollector>();
+                if (collector != null)
+                {
+                    collector.Setup(this, false);
+                }
+                else
+                {
+                    Debug.LogWarning($"预制体 {badPopupPrefab.name} 上缺少 PopupCollector 脚本！");
+                }
+                
                 spawnedInstances.Add(instance);
 
                 SpawnParticleAt(pos.Value, instance.transform);
