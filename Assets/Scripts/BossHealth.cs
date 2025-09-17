@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class BossHealth : MonoBehaviour
 {
@@ -21,6 +22,7 @@ public class BossHealth : MonoBehaviour
 
         if (currentHealth <= 0)
         {
+			SceneManager.LoadScene(1);
             // TODO: Boss 死亡处理
             Debug.Log("Boss Dead");
         }
