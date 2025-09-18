@@ -6,7 +6,7 @@ public class Skill02 : MonoBehaviour
 {
     [Header("Prefab & Spawn")]
     [SerializeField] private GameObject goodPopupPrefab;   // 好的预制体
-    [SerializeField] private GameObject badPopupPrefab;    // 坏的预制体
+    [SerializeField] private GameObject[] badPopupPrefabs;    // 坏的预制体
     [SerializeField, Min(0)] private int goodPopupCount = 3; // 好的生成数量
     [SerializeField, Min(0)] private int badPopupCount = 2;  // 坏的生成数量
 
@@ -65,7 +65,7 @@ public class Skill02 : MonoBehaviour
 
     public void SpawnCallPopups()
     {
-        if (goodPopupPrefab == null && badPopupPrefab == null)
+        if (goodPopupPrefab == null && badPopupPrefabs == null)
         {
             Debug.LogError("goodPopupPrefab 和 badPopupPrefab 都为 null，请在 Inspector 指定至少一个预制体。");
             return;
@@ -89,7 +89,7 @@ public class Skill02 : MonoBehaviour
                     pos = GetRandomSpawnPosition();
                 }
 
-                GameObject instance = Instantiate(goodPopupPrefab, pos.Value, Quaternion.identity);
+                GameObject instance = Instantiate(goodPopupPrefab, pos.Value + new Vector3(0, 0.5f, 0), Quaternion.identity);
                 
                 // 改动：不再 AddComponent，而是 GetComponent
                 var collector = instance.GetComponent<PopupCollector>();
@@ -114,7 +114,7 @@ public class Skill02 : MonoBehaviour
             castingStateCoroutine = StartCoroutine(CastingStateCoroutine());
 
         // 生成坏的预制体
-        if (badPopupPrefab != null)
+        if (badPopupPrefabs != null)
         {
             for (int i = 0; i < badPopupCount; i++)
             {
@@ -125,7 +125,7 @@ public class Skill02 : MonoBehaviour
                     pos = GetRandomSpawnPosition();
                 }
 
-                GameObject instance = Instantiate(badPopupPrefab, pos.Value, Quaternion.identity);
+                GameObject instance = Instantiate(badPopupPrefabs[Random.Range(0,4)], pos.Value + new Vector3(0,0.5f,0), Quaternion.identity);
 
                 // 改动：不再 AddComponent，而是 GetComponent
                 var collector = instance.GetComponent<PopupCollector>();
@@ -135,7 +135,7 @@ public class Skill02 : MonoBehaviour
                 }
                 else
                 {
-                    Debug.LogWarning($"预制体 {badPopupPrefab.name} 上缺少 PopupCollector 脚本！");
+                    //Debug.LogWarning($"预制体 {badPopupPrefabs.name} 上缺少 PopupCollector 脚本！");
                 }
                 
                 spawnedInstances.Add(instance);
