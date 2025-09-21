@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 3759061655645606690}
   - component: {fileID: 6938527320223600113}
   - component: {fileID: -7776318576081710591}
+  - component: {fileID: 6787812333306390655}
   m_Layer: 0
   m_Name: PopUpBadYou
   m_TagString: Damage
@@ -122,6 +123,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   collectSfx: {fileID: 8300000, guid: 50035dd8d4f6a3048b7b9797a41b15b6, type: 3}
   sfxVolume: 1
+--- !u!114 &6787812333306390655
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4029073522452023524}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1863965e00cda6d46a1d33668b44b673, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  rotationSpeed: 1
 --- !u!1 &4062129406047037450
 GameObject:
   m_ObjectHideFlags: 0
