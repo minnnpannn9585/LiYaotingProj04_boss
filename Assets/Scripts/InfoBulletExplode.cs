@@ -6,7 +6,7 @@ public class ExplosionVisualOnly : MonoBehaviour
     public float BulletLiveTime;
     public GameObject particlePrefab;
 
-    // 新增：粒子保留时间与音效
+    //VfX
     public float particleDuration = 3f;
     public AudioClip explosionSound;
     public float explosionVolume = 1f;
@@ -25,7 +25,6 @@ public class ExplosionVisualOnly : MonoBehaviour
             Destroy(v, particleDuration);
         }
 
-        // 快捷播放一次性音效（无需手动创建 AudioSource）
         if (explosionSound != null)
             AudioSource.PlayClipAtPoint(explosionSound, transform.position, explosionVolume);
 

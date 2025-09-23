@@ -55,6 +55,8 @@ public class Skill02 : MonoBehaviour
     yield break;
     }
 
+
+    //Test: Press E to spawn PopUps
     void Update()
     {
         if (Input.GetKeyUp(KeyCode.E))
@@ -71,13 +73,11 @@ public class Skill02 : MonoBehaviour
             return;
         }
 
-        // 清理旧数据
         spawnedInstances.Clear();
 
-        // 实际生成的好预制体数量（如果 goodPrefab 为 null 则为 0）
         remainingGoodCount = (goodPopupPrefab != null) ? goodPopupCount : 0;
 
-        // 生成好的预制体
+        //SPAWN GOOD PopUps
         if (goodPopupPrefab != null)
         {
             for (int i = 0; i < goodPopupCount; i++)
@@ -91,29 +91,24 @@ public class Skill02 : MonoBehaviour
 
                 GameObject instance = Instantiate(goodPopupPrefab, pos.Value + new Vector3(0, 0.5f, 0), Quaternion.identity);
                 
-                // 改动：不再 AddComponent，而是 GetComponent
                 var collector = instance.GetComponent<PopupCollector>();
                 if (collector != null)
                 {
                     collector.Setup(this, true);
                 }
-                else
-                {
-                    Debug.LogWarning($"预制体 {goodPopupPrefab.name} 上缺少 PopupCollector 脚本！");
-                }
-
+    
                 spawnedInstances.Add(instance);
 
                 SpawnParticleAt(pos.Value, instance.transform);
-                PlaySpawnSfx(); // 新增
+                PlaySpawnSfx(); //
             }
         }
 
-        // 如果通过测试调用 SpawnCallPopups（例如按 E），确保施放状态协程在运行
+        
         if (castingStateCoroutine == null)
             castingStateCoroutine = StartCoroutine(CastingStateCoroutine());
 
-        // 生成坏的预制体
+        //SPAWN BAD PopUps
         if (badPopupPrefabs != null)
         {
             for (int i = 0; i < badPopupCount; i++)
@@ -127,15 +122,10 @@ public class Skill02 : MonoBehaviour
 
                 GameObject instance = Instantiate(badPopupPrefabs[Random.Range(0,4)], pos.Value + new Vector3(0,0.5f,0), Quaternion.identity);
 
-                // 改动：不再 AddComponent，而是 GetComponent
                 var collector = instance.GetComponent<PopupCollector>();
                 if (collector != null)
                 {
                     collector.Setup(this, false);
-                }
-                else
-                {
-                    //Debug.LogWarning($"预制体 {badPopupPrefabs.name} 上缺少 PopupCollector 脚本！");
                 }
                 
                 spawnedInstances.Add(instance);

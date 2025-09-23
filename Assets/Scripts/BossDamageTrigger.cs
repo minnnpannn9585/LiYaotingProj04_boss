@@ -22,4 +22,13 @@ public class BossDamageTrigger : MonoBehaviour
 
         bossHealth.TakeDamage(damage);
     }
+
+
+
+
+
+
+
+
+    
 }

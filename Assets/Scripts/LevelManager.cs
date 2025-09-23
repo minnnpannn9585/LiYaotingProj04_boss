@@ -7,11 +7,10 @@ public class LevelManager : MonoBehaviour
     public Skill02 skill02;
     public BossDashSkill skill03;
 
-    public float skillInterval = 2f;          // 伤害阶段结束到下一轮技能开始的间隔
-    // public float TimegapBetweenSkills = 1f; // （可删除）旧通用间隔
-    public float gapAfterSkill01 = 1f;        // Skill01(两次) 到 Skill02 的间隔
-    public float gapAfterSkill02 = 1f;        // Skill02 到 Skill03 的间隔
-    public float damagePhaseDuration = 5f;    // 伤害窗口持续时间
+    public float skillInterval = 2f;          // Time between skills
+    public float gapAfterSkill01 = 1f;        // Skill01 Skill02 time gap
+    public float gapAfterSkill02 = 1f;        // Skill02 Skill03 time gap
+    public float damagePhaseDuration = 5f;    // Time for player to attack boss
 
     public float startTimer;
     bool started = false;
@@ -68,12 +67,12 @@ public class LevelManager : MonoBehaviour
                     yield return StartCoroutine(skill01.CastSkill());
             }
 
-            yield return new WaitForSeconds(gapAfterSkill01);   // 改：独立间隔
+            yield return new WaitForSeconds(gapAfterSkill01);   // Seperated
 
             if (skill02 != null)
                 yield return StartCoroutine(skill02.CastSkill());
 
-            yield return new WaitForSeconds(gapAfterSkill02);   // 改：独立间隔
+            yield return new WaitForSeconds(gapAfterSkill02);   // Seperated
 
             if (skill03 != null)
                 yield return StartCoroutine(skill03.CastSkill());
